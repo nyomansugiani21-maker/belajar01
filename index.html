@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan Harga Barang</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button { padding: 10px; margin: 5px; width: 100%; }
+    #reader { width: 300px; margin: auto; }
+  </style>
+</head>
+<body>
+
+<h2>📦 Scan Barang</h2>
+
+<div id="reader"></div>
+
+<h3>Hasil</h3>
+<div id="hasil"></div>
+
+<div id="form" style="display:none;">
+  <h3>Input Data</h3>
+  <input type="text" id="barcode" readonly>
+  <input type="text" id="nama" placeholder="Nama Barang">
+  <input type="number" id="harga" placeholder="Harga">
+  <button onclick="simpan()">Simpan</button>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbxVRIN63lsB61Zn0ChV_fLPyEATIiNcAi2CFcmq4m7usmuYedkFNsltEsyvdNN2E8He/exec";
+
+// Scan barcode
+function onScanSuccess(decodedText) {
+  document.getElementById("barcode").value = decodedText;
+  cekData(decodedText);
+}
+
+let scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+scanner.render(onScanSuccess);
+
+
+// cek data
+function cekData(barcode) {
+  fetch(API_URL + "?barcode=" + barcode)
+    .then(res => res.json())
+    .then(data => {
+
+      if (data.length === 0) {
+        document.getElementById("form").style.display = "block";
+        document.getElementById("hasil").innerHTML = "Data tidak ditemukan";
+      } else {
+        document.getElementById("form").style.display = "none";
+
+        let html = "<h3>Riwayat Harga</h3>";
+        data.forEach(d => {
+          html += `<p>${d.tanggal} - Rp ${d.harga}</p>`;
+        });
+
+        document.getElementById("hasil").innerHTML = html;
+      }
+    });
+}
+
+
+// simpan data
+function simpan() {
+  const data = {
+    barcode: document.getElementById("barcode").value,
+    nama: document.getElementById("nama").value,
+    harga: document.getElementById("harga").value
+  };
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(() => {
+    alert("Data berhasil disimpan!");
+    document.getElementById("form").style.display = "none";
+    document.getElementById("hasil").innerHTML = "";
+  });
+}
+</script>
+
+</body>
+</html>
