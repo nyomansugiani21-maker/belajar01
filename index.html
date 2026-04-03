@@ -35,8 +35,44 @@ function onScanSuccess(decodedText) {
   cekData(decodedText);
 }
 
-let scanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-scanner.render(onScanSuccess);
+let html5QrCode;
+let isScanning = false;
+
+function startScanner() {
+  html5QrCode = new Html5Qrcode("reader");
+
+  Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+      let cameraId = devices[0].id;
+
+      html5QrCode.start(
+        cameraId,
+        {
+          fps: 10,
+          qrbox: 250
+        },
+        (decodedText) => {
+          if (!isScanning) return;
+
+          isScanning = false;
+
+          // STOP kamera setelah scan berhasil
+          html5QrCode.stop().then(() => {
+            document.getElementById("reader").innerHTML = "";
+          });
+
+          document.getElementById("barcode").value = decodedText;
+          cekData(decodedText);
+        }
+      );
+
+      isScanning = true;
+    }
+  });
+}
+
+// Jalankan saat halaman dibuka
+startScanner();
 
 
 // cek data
