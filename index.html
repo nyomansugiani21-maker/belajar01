@@ -2,47 +2,68 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Scan Harga Barang</title>
+  <title>Scan Barang</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
     body {
+      margin: 0;
       font-family: Arial;
-      text-align: center;
-      background: #111;
+      background: black;
       color: white;
+      text-align: center;
     }
 
+    h2 {
+      margin: 10px;
+    }
+
+    /* FULLSCREEN SCANNER */
     #scanner-container {
       position: relative;
       width: 100%;
-      max-width: 400px;
-      margin: auto;
+      height: 60vh;
+      overflow: hidden;
+      background: black;
     }
 
     #reader {
       width: 100%;
+      height: 100%;
     }
 
+    video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+    }
+
+    /* OVERLAY SCAN */
     .overlay {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 250px;
-      height: 150px;
+      width: 260px;
+      height: 140px;
       transform: translate(-50%, -50%);
       border: 3px solid white;
-      box-shadow: 0 0 0 2000px rgba(0,0,0,0.5);
       border-radius: 10px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+      pointer-events: none;
+    }
+
+    /* BUTTON AREA */
+    .controls {
+      padding: 10px;
     }
 
     button {
-      padding: 10px;
+      padding: 12px;
       margin: 5px;
       width: 90%;
-      border: none;
-      border-radius: 8px;
       font-size: 16px;
+      border-radius: 10px;
+      border: none;
     }
 
     input {
@@ -54,9 +75,9 @@
     }
 
     #hasil {
-      margin-top: 15px;
-      background: #222;
+      margin: 10px;
       padding: 10px;
+      background: #222;
       border-radius: 10px;
     }
   </style>
@@ -71,8 +92,10 @@
   <div class="overlay"></div>
 </div>
 
-<button onclick="startScanner()">▶️ Mulai Scan</button>
-<button onclick="switchCamera()">🔄 Ganti Kamera</button>
+<div class="controls">
+  <button onclick="startScanner()">▶️ Mulai Scan</button>
+  <button onclick="switchCamera()">🔄 Ganti Kamera</button>
+</div>
 
 <h3>Hasil</h3>
 <div id="hasil"></div>
@@ -94,19 +117,22 @@ let currentCameraIndex = 0;
 let isScanning = false;
 
 
-// ▶️ START SCANNER
+// START SCANNER
 function startScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().catch(() => {});
+  }
+
   html5QrCode = new Html5Qrcode("reader");
 
   Html5Qrcode.getCameras().then(devices => {
     cameras = devices;
 
-    if (cameras.length === 0) {
+    if (!cameras.length) {
       alert("Kamera tidak ditemukan");
       return;
     }
 
-    // pilih kamera belakang
     let backIndex = cameras.findIndex(cam =>
       cam.label.toLowerCase().includes('back') ||
       cam.label.toLowerCase().includes('rear') ||
@@ -116,13 +142,11 @@ function startScanner() {
     currentCameraIndex = backIndex !== -1 ? backIndex : 0;
 
     startCamera(cameras[currentCameraIndex].id);
-  }).catch(err => {
-    alert("Gagal akses kamera: " + err);
   });
 }
 
 
-// 🎥 START CAMERA
+// START CAMERA
 function startCamera(cameraId) {
   isScanning = true;
 
@@ -130,32 +154,29 @@ function startCamera(cameraId) {
     cameraId,
     {
       fps: 10,
-      qrbox: { width: 250, height: 150 }
+      qrbox: { width: 260, height: 140 }
     },
     (decodedText) => {
       if (!isScanning) return;
 
       isScanning = false;
 
-      // 🔊 beep
       new Audio("https://www.soundjay.com/button/beep-07.wav").play();
 
-      // stop kamera
       html5QrCode.stop().then(() => {
         document.getElementById("reader").innerHTML = "";
       });
 
       document.getElementById("barcode").value = decodedText;
-
       cekData(decodedText);
     }
   );
 }
 
 
-// 🔄 SWITCH CAMERA
+// SWITCH CAMERA
 function switchCamera() {
-  if (!cameras.length) return;
+  if (!cameras.length || !html5QrCode) return;
 
   currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
 
@@ -165,7 +186,7 @@ function switchCamera() {
 }
 
 
-// 🔍 CEK DATA
+// CEK DATA
 function cekData(barcode) {
   document.getElementById("hasil").innerHTML = "⏳ Memproses...";
 
@@ -192,7 +213,7 @@ function cekData(barcode) {
 }
 
 
-// 💾 SIMPAN DATA
+// SIMPAN DATA
 function simpan() {
   const data = {
     barcode: document.getElementById("barcode").value,
@@ -211,7 +232,6 @@ function simpan() {
     document.getElementById("hasil").innerHTML = "";
   });
 }
-
 </script>
 
 </body>
