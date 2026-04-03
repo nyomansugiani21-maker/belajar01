@@ -12,123 +12,139 @@
 
   <style>
     body {
-      margin: 0;
-      font-family: Arial;
-      background: black;
-      color: white;
-      text-align: center;
-    }
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f0f0f;
+  color: white;
+}
 
-    #scanner-container {
-      position: relative;
-      width: 100%;
-      height: 60vh;
-      overflow: hidden;
-    }
+/* HEADER */
+.header {
+  padding: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
 
-    #reader {
-      width: 100%;
-      height: 100%;
-    }
+/* SCANNER FULL */
+#scanner-container {
+  position: relative;
+  width: 100%;
+  height: 50vh;
+  background: black;
+}
 
-    video {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover;
-    }
+#reader {
+  width: 100%;
+  height: 100%;
+}
 
-    .overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 260px;
-      height: 140px;
-      transform: translate(-50%, -50%);
-      border: 3px solid white;
-      border-radius: 10px;
-      box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
-    }
+video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
 
-    button {
-  width: 90%;
-  max-width: 400px;
-  height: 55px;
-  margin: 10px auto;
-  display: block;
+/* OVERLAY */
+.overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 280px;
+  height: 160px;
+  transform: translate(-50%, -50%);
+  border: 3px solid #00e676;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
+}
 
+/* BUTTON AREA */
+.controls {
+  padding: 10px;
+}
+
+button {
+  width: 100%;
+  height: 60px;
+  margin-top: 10px;
+  border-radius: 14px;
   font-size: 18px;
   font-weight: bold;
-
-  border-radius: 12px;
   border: none;
-
-  background: linear-gradient(135deg, #2196F3, #1976D2);
-  color: white;
-
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-
-  transition: all 0.2s ease;
 }
 
-/* efek ditekan */
-button:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-}
-
+/* BUTTON COLORS */
 .btn-scan {
-  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  background: linear-gradient(135deg, #00c853, #2e7d32);
 }
 
 .btn-switch {
-  background: linear-gradient(135deg, #FF9800, #EF6C00);
+  background: linear-gradient(135deg, #ff9800, #ef6c00);
 }
-    
-    input {
-      padding: 10px;
-      margin: 5px;
-      width: 90%;
-      border-radius: 8px;
-      border: none;
-    }
 
-    #hasil {
-      margin: 10px;
-      padding: 10px;
-      background: #222;
-      border-radius: 10px;
-    }
+/* STATUS */
+#status {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 14px;
+}
 
-    #status {
-      margin: 10px;
-      font-size: 14px;
-    }
+/* CARD */
+.card {
+  background: #1e1e1e;
+  margin: 10px;
+  padding: 15px;
+  border-radius: 14px;
+}
+
+/* INPUT */
+input {
+  width: 100%;
+  height: 50px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: none;
+  padding: 10px;
+  font-size: 16px;
+}
+
+/* HASIL */
+#hasil {
+  font-size: 16px;
+  line-height: 1.6;
+}
   </style>
 </head>
 
 <body>
 
-<h2>📦 Scan Barang</h2>
+<div class="header">📦 Scan Barang</div>
 
 <div id="scanner-container">
   <div id="reader"></div>
   <div class="overlay"></div>
 </div>
 
-<button class="btn-scan" onclick="startScanner()">▶️ Mulai Scan</button>
-<button class="btn-switch" onclick="switchCamera()">🔄 Ganti Kamera</button>
+<div class="controls">
+  <button class="btn-scan" onclick="startScanner()">▶️ Mulai Scan</button>
+  <button class="btn-switch" onclick="switchCamera()">🔄 Ganti Kamera</button>
 
-<div id="status">🔄 Mengecek koneksi database...</div>
-<div id="hasil">Siap scan...</div>
+  <div id="status">🔄 Mengecek koneksi...</div>
+</div>
 
-<div id="form" style="display:none;">
-  <h3>Input Data</h3>
+<div class="card">
+  <h3>📊 Hasil</h3>
+  <div id="hasil">Siap scan...</div>
+</div>
+
+<div class="card" id="form" style="display:none;">
+  <h3>📝 Input Data</h3>
   <input type="text" id="barcode" readonly>
   <input type="text" id="nama" placeholder="Nama Barang">
   <input type="number" id="harga" placeholder="Harga">
-  <button onclick="simpan()">💾 Simpan</button>
+  <button class="btn-scan" onclick="simpan()">💾 Simpan</button>
 </div>
-
+  
 <script>
 console.log("JS Loaded");
 
