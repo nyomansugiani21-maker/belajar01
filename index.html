@@ -97,6 +97,10 @@
   <button onclick="switchCamera()">🔄 Ganti Kamera</button>
 </div>
 
+<div id="status" style="margin-top:10px; font-size:14px;">
+  🔄 Mengecek koneksi...
+</div>  
+
 <h3>Hasil</h3>
 <div id="hasil"></div>
 
@@ -116,7 +120,8 @@ let cameras = [];
 let currentCameraIndex = 0;
 let isScanning = false;
 
-
+cekKoneksi();
+  
 // START SCANNER
 function startScanner() {
   if (html5QrCode) {
@@ -185,10 +190,22 @@ function switchCamera() {
   });
 }
 
+function cekKoneksi() {
+  fetch(API_URL + "?barcode=test")
+    .then(res => res.json())
+    .then(() => {
+      document.getElementById("status").innerHTML = "🟢 Database terhubung";
+      document.getElementById("status").style.color = "lightgreen";
+    })
+    .catch(() => {
+      document.getElementById("status").innerHTML = "🔴 Database tidak terhubung";
+      document.getElementById("status").style.color = "red";
+    });
+}  
 
 // CEK DATA
 function cekData(barcode) {
-  document.getElementById("hasil").innerHTML = "⏳ Memproses...";
+  document.getElementById("hasil").innerHTML = "🔍 Mencari data...";
 
   fetch(API_URL + "?barcode=" + barcode)
     .then(res => res.json())
@@ -209,6 +226,10 @@ function cekData(barcode) {
 
         document.getElementById("hasil").innerHTML = html;
       }
+    })
+    .catch(() => {
+      document.getElementById("hasil").innerHTML = "⚠️ Gagal mengambil data";
+      document.getElementById("status").innerHTML = "🔴 Database tidak terhubung";
     });
 }
 
