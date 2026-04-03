@@ -7,24 +7,8 @@
   <!-- Scanner -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, limit } 
-    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyC_Ua3MA1S7C1KjGkakKUEcNc0bUVFtHYo",
-      authDomain: "belajar01-ed065.firebaseapp.com",
-      projectId: "belajar01-ed065"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    window.db = db;
-    window.fb = { collection, addDoc, getDocs, query, where, orderBy, limit };
-  </script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
   <style>
     body {
@@ -89,6 +73,11 @@
       background: #222;
       border-radius: 10px;
     }
+
+    #status {
+      margin: 10px;
+      font-size: 14px;
+    }
   </style>
 </head>
 
@@ -104,6 +93,8 @@
 <button onclick="startScanner()">▶️ Mulai Scan</button>
 <button onclick="switchCamera()">🔄 Ganti Kamera</button>
 
+<div id="status">🔄 Mengecek koneksi database...</div>
+
 <div id="hasil">Siap scan...</div>
 
 <div id="form" style="display:none;">
@@ -115,13 +106,41 @@
 </div>
 
 <script>
+/* =========================
+   🔥 KONFIGURASI SUPABASE
+========================= */
+const SUPABASE_URL = "https://sfdrqvkfdgioocpndigv.supabase.co";
+const SUPABASE_KEY = "sb_publishable__O8nVFTBmCZ0_iZ8ZUdpBQ_i2bKUnAc";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+/* =========================
+   🔌 CEK KONEKSI DATABASE
+========================= */
+async function cekKoneksi() {
+  const { error } = await supabase.from('produk').select('*').limit(1);
+
+  if (error) {
+    document.getElementById("status").innerHTML = "🔴 Database tidak terhubung";
+    document.getElementById("status").style.color = "red";
+  } else {
+    document.getElementById("status").innerHTML = "🟢 Database terhubung";
+    document.getElementById("status").style.color = "lightgreen";
+  }
+}
+
+cekKoneksi();
+
+
+/* =========================
+   📷 SCANNER
+========================= */
 let html5QrCode;
 let cameras = [];
 let currentCameraIndex = 0;
 let isScanning = false;
 
-
-// START SCANNER
 function startScanner() {
   if (html5QrCode) {
     html5QrCode.stop().catch(() => {});
@@ -149,8 +168,6 @@ function startScanner() {
   });
 }
 
-
-// START CAMERA
 function startCamera(cameraId) {
   isScanning = true;
 
@@ -180,8 +197,6 @@ function startCamera(cameraId) {
   );
 }
 
-
-// SWITCH CAMERA
 function switchCamera() {
   if (!cameras.length || !html5QrCode) return;
 
@@ -193,23 +208,25 @@ function switchCamera() {
 }
 
 
-// CEK DATA FIREBASE
+/* =========================
+   🔍 CEK DATA
+========================= */
 async function cekData(barcode) {
   document.getElementById("hasil").innerHTML = "🔍 Mencari data...";
 
-  const { collection, getDocs, query, where, orderBy, limit } = window.fb;
-  const db = window.db;
+  let { data, error } = await supabase
+    .from('produk')
+    .select('*')
+    .eq('barcode', barcode)
+    .order('tanggal', { ascending: true })
+    .limit(5);
 
-  const q = query(
-    collection(db, "produk"),
-    where("barcode", "==", barcode),
-    orderBy("tanggal", "asc"),
-    limit(5)
-  );
+  if (error) {
+    document.getElementById("hasil").innerHTML = "⚠️ Error koneksi database";
+    return;
+  }
 
-  const snapshot = await getDocs(q);
-
-  if (snapshot.empty) {
+  if (data.length === 0) {
     document.getElementById("form").style.display = "block";
     document.getElementById("hasil").innerHTML = "❌ Data tidak ditemukan";
   } else {
@@ -217,9 +234,8 @@ async function cekData(barcode) {
 
     let html = "<h3>Riwayat Harga</h3>";
 
-    snapshot.forEach(doc => {
-      let d = doc.data();
-      let tgl = new Date(d.tanggal.seconds * 1000).toLocaleDateString();
+    data.forEach(d => {
+      let tgl = new Date(d.tanggal).toLocaleDateString();
       html += `<p>${tgl} - Rp ${d.harga}</p>`;
     });
 
@@ -228,21 +244,26 @@ async function cekData(barcode) {
 }
 
 
-// SIMPAN DATA FIREBASE
+/* =========================
+   💾 SIMPAN DATA
+========================= */
 async function simpan() {
-  const { collection, addDoc } = window.fb;
-  const db = window.db;
+  const { error } = await supabase.from('produk').insert([
+    {
+      barcode: document.getElementById("barcode").value,
+      nama: document.getElementById("nama").value,
+      harga: parseInt(document.getElementById("harga").value),
+      tanggal: new Date()
+    }
+  ]);
 
-  await addDoc(collection(db, "produk"), {
-    barcode: document.getElementById("barcode").value,
-    nama: document.getElementById("nama").value,
-    harga: parseInt(document.getElementById("harga").value),
-    tanggal: new Date()
-  });
-
-  alert("✅ Data tersimpan");
-  document.getElementById("form").style.display = "none";
-  document.getElementById("hasil").innerHTML = "✅ Data berhasil ditambahkan";
+  if (error) {
+    alert("❌ Gagal simpan data");
+  } else {
+    alert("✅ Data tersimpan");
+    document.getElementById("form").style.display = "none";
+    document.getElementById("hasil").innerHTML = "✅ Data berhasil ditambahkan";
+  }
 }
 </script>
 
