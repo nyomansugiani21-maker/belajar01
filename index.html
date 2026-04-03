@@ -72,59 +72,7 @@ function startScanner() {
 }
 
 // Jalankan saat halaman dibuka
-let html5QrCode;
-let isScanning = false;
-
-function startScanner() {
-  html5QrCode = new Html5Qrcode("reader");
-
-  Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-
-      // 🔥 PRIORITAS: kamera belakang
-      let backCamera = devices.find(device =>
-        device.label.toLowerCase().includes('back') ||
-        device.label.toLowerCase().includes('rear') ||
-        device.label.toLowerCase().includes('environment')
-      );
-
-      let cameraId = backCamera ? backCamera.id : devices[0].id;
-
-      html5QrCode.start(
-        cameraId,
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 150 } // lebih cocok untuk barcode (horizontal)
-        },
-        (decodedText) => {
-          if (!isScanning) return;
-
-          isScanning = false;
-
-          // 🔊 suara beep (opsional)
-          let audio = new Audio("https://www.soundjay.com/button/beep-07.wav");
-          audio.play();
-
-          // 🛑 stop kamera setelah berhasil scan
-          html5QrCode.stop().then(() => {
-            document.getElementById("reader").innerHTML = "";
-          });
-
-          document.getElementById("barcode").value = decodedText;
-          cekData(decodedText);
-        }
-      );
-
-      isScanning = true;
-    }
-  }).catch(err => {
-    console.error("Camera error:", err);
-    alert("Tidak bisa mengakses kamera");
-  });
-}
-
-// Jalankan otomatis
-startScanner();
+startScanner()
 
 
 // cek data
