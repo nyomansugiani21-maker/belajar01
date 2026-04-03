@@ -50,14 +50,40 @@
     }
 
     button {
-      padding: 12px;
-      margin: 5px;
-      width: 90%;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
-    }
+  width: 90%;
+  max-width: 400px;
+  height: 55px;
+  margin: 10px auto;
+  display: block;
 
+  font-size: 18px;
+  font-weight: bold;
+
+  border-radius: 12px;
+  border: none;
+
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+
+  transition: all 0.2s ease;
+}
+
+/* efek ditekan */
+button:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+
+.btn-scan {
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+}
+
+.btn-switch {
+  background: linear-gradient(135deg, #FF9800, #EF6C00);
+}
+    
     input {
       padding: 10px;
       margin: 5px;
@@ -89,8 +115,8 @@
   <div class="overlay"></div>
 </div>
 
-<button onclick="startScanner()">▶️ Mulai Scan</button>
-<button onclick="switchCamera()">🔄 Ganti Kamera</button>
+<button class="btn-scan" onclick="startScanner()">▶️ Mulai Scan</button>
+<button class="btn-switch" onclick="switchCamera()">🔄 Ganti Kamera</button>
 
 <div id="status">🔄 Mengecek koneksi database...</div>
 <div id="hasil">Siap scan...</div>
