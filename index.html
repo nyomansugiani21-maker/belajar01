@@ -267,7 +267,8 @@ async function cekData(barcode) {
 
       data.forEach(d => {
         let tgl = new Date(d.tanggal).toLocaleDateString();
-        html += `<p>${tgl} - Rp ${d.harga}</p>`;
+        let hargaFormat = parseInt(d.harga).toLocaleString('id-ID');
+        html += `<p>${tgl} - Rp ${hargaFormat}</p>`;
       });
 
       document.getElementById("hasil").innerHTML = html;
