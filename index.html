@@ -1,19 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Scan Harga Barang</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
+
   <style>
-    body { font-family: Arial; padding: 20px; }
-    input, button { padding: 10px; margin: 5px; width: 100%; }
-    #reader { width: 300px; margin: auto; }
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #111;
+      color: white;
+    }
+
+    #scanner-container {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    #reader {
+      width: 100%;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 250px;
+      height: 150px;
+      transform: translate(-50%, -50%);
+      border: 3px solid white;
+      box-shadow: 0 0 0 2000px rgba(0,0,0,0.5);
+      border-radius: 10px;
+    }
+
+    button {
+      padding: 10px;
+      margin: 5px;
+      width: 90%;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    input {
+      padding: 10px;
+      margin: 5px;
+      width: 90%;
+      border-radius: 8px;
+      border: none;
+    }
+
+    #hasil {
+      margin-top: 15px;
+      background: #222;
+      padding: 10px;
+      border-radius: 10px;
+    }
   </style>
 </head>
+
 <body>
 
 <h2>📦 Scan Barang</h2>
 
-<div id="reader"></div>
+<div id="scanner-container">
+  <div id="reader"></div>
+  <div class="overlay"></div>
+</div>
+
+<button onclick="startScanner()">▶️ Mulai Scan</button>
+<button onclick="switchCamera()">🔄 Ganti Kamera</button>
 
 <h3>Hasil</h3>
 <div id="hasil"></div>
@@ -23,125 +82,108 @@
   <input type="text" id="barcode" readonly>
   <input type="text" id="nama" placeholder="Nama Barang">
   <input type="number" id="harga" placeholder="Harga">
-  <button onclick="simpan()">Simpan</button>
+  <button onclick="simpan()">💾 Simpan</button>
 </div>
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbxVRIN63lsB61Zn0ChV_fLPyEATIiNcAi2CFcmq4m7usmuYedkFNsltEsyvdNN2E8He/exec";
 
-// Scan barcode
-function onScanSuccess(decodedText) {
-  document.getElementById("barcode").value = decodedText;
-  cekData(decodedText);
-}
-
 let html5QrCode;
+let cameras = [];
+let currentCameraIndex = 0;
 let isScanning = false;
 
+
+// ▶️ START SCANNER
 function startScanner() {
   html5QrCode = new Html5Qrcode("reader");
 
   Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-      let cameraId = devices[0].id;
+    cameras = devices;
 
-      html5QrCode.start(
-        cameraId,
-        {
-          fps: 10,
-          qrbox: 250
-        },
-        (decodedText) => {
-          if (!isScanning) return;
-
-          isScanning = false;
-
-          // STOP kamera setelah scan berhasil
-          html5QrCode.stop().then(() => {
-            document.getElementById("reader").innerHTML = "";
-          });
-
-          document.getElementById("barcode").value = decodedText;
-          cekData(decodedText);
-        }
-      );
-
-      isScanning = true;
+    if (cameras.length === 0) {
+      alert("Kamera tidak ditemukan");
+      return;
     }
-  });
-}
 
-// Jalankan saat halaman dibuka
-let html5QrCode;
-let isScanning = false;
+    // pilih kamera belakang
+    let backIndex = cameras.findIndex(cam =>
+      cam.label.toLowerCase().includes('back') ||
+      cam.label.toLowerCase().includes('rear') ||
+      cam.label.toLowerCase().includes('environment')
+    );
 
-function startScanner() {
-  html5QrCode = new Html5Qrcode("reader");
+    currentCameraIndex = backIndex !== -1 ? backIndex : 0;
 
-  Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-
-      // 🔥 PRIORITAS: kamera belakang
-      let backCamera = devices.find(device =>
-        device.label.toLowerCase().includes('back') ||
-        device.label.toLowerCase().includes('rear') ||
-        device.label.toLowerCase().includes('environment')
-      );
-
-      let cameraId = backCamera ? backCamera.id : devices[0].id;
-
-      html5QrCode.start(
-        cameraId,
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 150 } // lebih cocok untuk barcode (horizontal)
-        },
-        (decodedText) => {
-          if (!isScanning) return;
-
-          isScanning = false;
-
-          // 🔊 suara beep (opsional)
-          let audio = new Audio("https://www.soundjay.com/button/beep-07.wav");
-          audio.play();
-
-          // 🛑 stop kamera setelah berhasil scan
-          html5QrCode.stop().then(() => {
-            document.getElementById("reader").innerHTML = "";
-          });
-
-          document.getElementById("barcode").value = decodedText;
-          cekData(decodedText);
-        }
-      );
-
-      isScanning = true;
-    }
+    startCamera(cameras[currentCameraIndex].id);
   }).catch(err => {
-    console.error("Camera error:", err);
-    alert("Tidak bisa mengakses kamera");
+    alert("Gagal akses kamera: " + err);
   });
 }
 
-// Jalankan otomatis
-startScanner();
+
+// 🎥 START CAMERA
+function startCamera(cameraId) {
+  isScanning = true;
+
+  html5QrCode.start(
+    cameraId,
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 150 }
+    },
+    (decodedText) => {
+      if (!isScanning) return;
+
+      isScanning = false;
+
+      // 🔊 beep
+      new Audio("https://www.soundjay.com/button/beep-07.wav").play();
+
+      // stop kamera
+      html5QrCode.stop().then(() => {
+        document.getElementById("reader").innerHTML = "";
+      });
+
+      document.getElementById("barcode").value = decodedText;
+
+      cekData(decodedText);
+    }
+  );
+}
 
 
-// cek data
+// 🔄 SWITCH CAMERA
+function switchCamera() {
+  if (!cameras.length) return;
+
+  currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+
+  html5QrCode.stop().then(() => {
+    startCamera(cameras[currentCameraIndex].id);
+  });
+}
+
+
+// 🔍 CEK DATA
 function cekData(barcode) {
+  document.getElementById("hasil").innerHTML = "⏳ Memproses...";
+
   fetch(API_URL + "?barcode=" + barcode)
     .then(res => res.json())
     .then(data => {
 
       if (data.length === 0) {
         document.getElementById("form").style.display = "block";
-        document.getElementById("hasil").innerHTML = "Data tidak ditemukan";
+        document.getElementById("hasil").innerHTML = "❌ Data tidak ditemukan";
       } else {
         document.getElementById("form").style.display = "none";
 
         let html = "<h3>Riwayat Harga</h3>";
+
         data.forEach(d => {
-          html += `<p>${d.tanggal} - Rp ${d.harga}</p>`;
+          let tgl = new Date(d.tanggal).toLocaleDateString();
+          html += `<p>${tgl} - Rp ${d.harga}</p>`;
         });
 
         document.getElementById("hasil").innerHTML = html;
@@ -150,7 +192,7 @@ function cekData(barcode) {
 }
 
 
-// simpan data
+// 💾 SIMPAN DATA
 function simpan() {
   const data = {
     barcode: document.getElementById("barcode").value,
@@ -164,11 +206,12 @@ function simpan() {
   })
   .then(res => res.json())
   .then(() => {
-    alert("Data berhasil disimpan!");
+    alert("✅ Data berhasil disimpan");
     document.getElementById("form").style.display = "none";
     document.getElementById("hasil").innerHTML = "";
   });
 }
+
 </script>
 
 </body>
