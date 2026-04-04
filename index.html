@@ -4,125 +4,112 @@
   <meta charset="UTF-8">
   <title>Scan Barang</title>
 
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f0f0f">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- Scanner -->
   <script src="https://unpkg.com/html5-qrcode"></script>
 
-  <!-- Supabase FIX -->
+  <!-- Supabase -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
   <style>
     body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: #0f0f0f;
-  color: white;
-}
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: white;
+    }
 
-/* HEADER */
-.header {
-  padding: 15px;
-  font-size: 20px;
-  font-weight: bold;
-  text-align: center;
-}
+    .header {
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
 
-/* SCANNER FULL */
-#scanner-container {
-  position: relative;
-  width: 100%;
-  height: 50vh;
-  background: black;
-}
+    #scanner-container {
+      position: relative;
+      width: 100%;
+      height: 50vh;
+      background: black;
+    }
 
-.overlay {
-  animation: pulse 1.5s infinite;
-}
+    #reader {
+      width: 100%;
+      height: 100%;
+    }
 
-@keyframes pulse {
-  0% { border-color: #00e676; }
-  50% { border-color: #00c853; }
-  100% { border-color: #00e676; }
-}    
+    video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+    }
 
-#reader {
-  width: 100%;
-  height: 100%;
-}
+    .overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 280px;
+      height: 160px;
+      transform: translate(-50%, -50%);
+      border: 3px solid #00e676;
+      border-radius: 12px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
+    }
 
-video {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover;
-}
+    .controls {
+      padding: 10px;
+    }
 
-/* OVERLAY */
-.overlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 280px;
-  height: 160px;
-  transform: translate(-50%, -50%);
-  border: 3px solid #00e676;
-  border-radius: 12px;
-  box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
-}
+    button {
+      width: 100%;
+      height: 60px;
+      margin-top: 10px;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      color: white;
+    }
 
-/* BUTTON AREA */
-.controls {
-  padding: 10px;
-}
+    .btn-scan {
+      background: linear-gradient(135deg, #00c853, #2e7d32);
+    }
 
-button {
-  width: 100%;
-  height: 60px;
-  margin-top: 10px;
-  border-radius: 14px;
-  font-size: 18px;
-  font-weight: bold;
-  border: none;
-}
+    .btn-switch {
+      background: linear-gradient(135deg, #ff9800, #ef6c00);
+    }
 
-/* BUTTON COLORS */
-.btn-scan {
-  background: linear-gradient(135deg, #00c853, #2e7d32);
-}
+    #status {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 14px;
+    }
 
-.btn-switch {
-  background: linear-gradient(135deg, #ff9800, #ef6c00);
-}
+    .card {
+      background: #1e1e1e;
+      margin: 10px;
+      padding: 15px;
+      border-radius: 14px;
+    }
 
-/* STATUS */
-#status {
-  text-align: center;
-  margin-top: 8px;
-  font-size: 14px;
-}
+    input {
+      width: 100%;
+      height: 50px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: none;
+      padding: 10px;
+      font-size: 16px;
+    }
 
-/* CARD */
-.card {
-  background: #1e1e1e;
-  margin: 10px;
-  padding: 15px;
-  border-radius: 14px;
-}
-
-/* INPUT */
-input {
-  width: 100%;
-  height: 50px;
-  margin-top: 10px;
-  border-radius: 10px;
-  border: none;
-  padding: 10px;
-  font-size: 16px;
-}
-
-/* HASIL */
-#hasil {
-  font-size: 16px;
-  line-height: 1.6;
-}
+    #hasil {
+      font-size: 16px;
+      line-height: 1.6;
+    }
   </style>
 </head>
 
@@ -138,28 +125,27 @@ input {
 <div class="controls">
   <button class="btn-scan" onclick="startScanner()">▶️ Mulai Scan</button>
   <button class="btn-switch" onclick="switchCamera()">🔄 Ganti Kamera</button>
-
   <div id="status">🔄 Mengecek koneksi...</div>
 </div>
 
 <div class="card">
-  <h3>📊 Hasil</h3>
+  <h3>📊 Riwayat Harga</h3>
   <div id="hasil">Siap scan...</div>
 </div>
 
 <div class="card" id="form" style="display:none;">
-  <h3>📝 Input Data</h3>
+  <h3>📝 Input Harga Baru</h3>
   <input type="text" id="barcode" readonly>
   <input type="text" id="nama" placeholder="Nama Barang">
-  <input type="number" id="harga" placeholder="Harga">
+  <input type="number" id="harga" placeholder="Harga terbaru">
   <button class="btn-scan" onclick="simpan()">💾 Simpan</button>
 </div>
-  
+
 <script>
-console.log("JS Loaded");
+console.log("App Loaded");
 
 /* =========================
-   🔥 KONFIGURASI SUPABASE
+   🔥 SUPABASE CONFIG
 ========================= */
 const SUPABASE_URL = "https://sfdrqvkfdgioocpndigv.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmZHJxdmtmZGdpb29jcG5kaWd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMjI2NDAsImV4cCI6MjA5MDc5ODY0MH0.dOS8BVPW1YHpCjtcMZCVIVZxOZ2HPFn7HV3LF--wVkQ";
@@ -171,20 +157,14 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
    🔌 CEK KONEKSI
 ========================= */
 async function cekKoneksi() {
-  try {
-    let { error } = await supabaseClient.from('produk').select('*').limit(1);
+  let { error } = await supabaseClient.from('produk').select('*').limit(1);
 
-    if (error) throw error;
-
-    document.getElementById("status").innerHTML = "🟢 Database terhubung";
-    document.getElementById("status").style.color = "lightgreen";
-  } catch (err) {
+  if (error) {
     document.getElementById("status").innerHTML = "🔴 Database tidak terhubung";
-    document.getElementById("status").style.color = "red";
-    console.error(err);
+  } else {
+    document.getElementById("status").innerHTML = "🟢 Database terhubung";
   }
 }
-
 cekKoneksi();
 
 
@@ -197,10 +177,8 @@ let currentCameraIndex = 0;
 let isScanning = false;
 
 function startScanner() {
-  console.log("Start scanner clicked");
-
   if (html5QrCode) {
-    html5QrCode.stop().catch(() => {});
+    html5QrCode.stop().catch(()=>{});
   }
 
   html5QrCode = new Html5Qrcode("reader");
@@ -208,56 +186,43 @@ function startScanner() {
   Html5Qrcode.getCameras().then(devices => {
     cameras = devices;
 
-    if (!cameras.length) {
-      alert("Kamera tidak ditemukan");
-      return;
-    }
-
-    let backIndex = cameras.findIndex(cam =>
-      cam.label.toLowerCase().includes('back') ||
-      cam.label.toLowerCase().includes('rear') ||
-      cam.label.toLowerCase().includes('environment')
+    let backIndex = devices.findIndex(d =>
+      d.label.toLowerCase().includes("back") ||
+      d.label.toLowerCase().includes("rear") ||
+      d.label.toLowerCase().includes("environment")
     );
 
     currentCameraIndex = backIndex !== -1 ? backIndex : 0;
 
-    startCamera(cameras[currentCameraIndex].id);
-  }).catch(err => {
-    alert("Error kamera: " + err);
+    startCamera(devices[currentCameraIndex].id);
   });
 }
 
 function startCamera(cameraId) {
   isScanning = true;
 
-  html5QrCode.start(
-    cameraId,
-    {
-      fps: 10,
-      qrbox: { width: 260, height: 140 }
-    },
-    (decodedText) => {
-      if (!isScanning) return;
+  html5QrCode.start(cameraId, {
+    fps: 10,
+    qrbox: { width: 280, height: 160 }
+  }, (decodedText) => {
 
-      isScanning = false;
+    if (!isScanning) return;
+    isScanning = false;
 
-      document.getElementById("hasil").innerHTML = "⚡ Barcode terbaca...";
+    document.getElementById("hasil").innerHTML = "⚡ Barcode terbaca...";
 
-      new Audio("https://www.soundjay.com/button/beep-07.wav").play();
+    new Audio("https://www.soundjay.com/button/beep-07.wav").play();
 
-      html5QrCode.stop().then(() => {
-        document.getElementById("reader").innerHTML = "";
-      });
+    html5QrCode.stop();
 
-      document.getElementById("barcode").value = decodedText;
+    document.getElementById("barcode").value = decodedText;
 
-      cekData(decodedText);
-    }
-  );
+    cekData(decodedText);
+  });
 }
 
 function switchCamera() {
-  if (!cameras.length || !html5QrCode) return;
+  if (!cameras.length) return;
 
   currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
 
@@ -273,69 +238,45 @@ function switchCamera() {
 async function cekData(barcode) {
   document.getElementById("hasil").innerHTML = "🔍 Mencari data...";
 
-  try {
-    let { data, error } = await supabaseClient
-      .from('produk')
-      .select('*')
-      .eq('barcode', barcode)
-      .order('tanggal', { ascending: false })
-      .limit(5);
+  let { data, error } = await supabaseClient
+    .from('produk')
+    .select('*')
+    .eq('barcode', barcode)
+    .order('tanggal', { ascending: false })
+    .limit(5);
 
-    if (error) throw error;
-
-    if (data.length === 0) {
+  if (error) {
+    document.getElementById("hasil").innerHTML = "⚠️ Error database";
+    return;
+  }
 
   document.getElementById("form").style.display = "block";
-  document.getElementById("hasil").innerHTML = "❌ Data tidak ditemukan. Silakan input data baru.";
 
-} else {
+  if (data.length === 0) {
+    document.getElementById("hasil").innerHTML = "❌ Data tidak ditemukan";
+    return;
+  }
 
-  // 🔥 TAMPILKAN FORM (bukan disembunyikan)
-  document.getElementById("form").style.display = "block";
+  let last = data[0];
+  document.getElementById("nama").value = last.nama;
 
-  // 🔥 PREFILL NAMA BARANG dari data terakhir
-  let lastData = data[data.length - 1];
-  document.getElementById("nama").value = lastData.nama;
-
-  // 🔥 FORMAT HARGA
   let html = "<h3>📊 Riwayat Harga</h3>";
 
-  data.forEach(d => {
+  data.forEach((d, i) => {
     let tgl = new Date(d.tanggal).toLocaleDateString();
-    let hargaFormat = parseInt(d.harga).toLocaleString('id-ID');
-    html += `<p>${tgl} - Rp ${hargaFormat}</p>`;
+    let harga = parseInt(d.harga).toLocaleString('id-ID');
+    let label = i === 0 ? "🔥 Terbaru" : "";
+
+    html += `<p>${tgl} - Rp ${harga} ${label}</p>`;
   });
 
-  // 🔥 TAMBAHKAN PESAN UPDATE
   html += `
-    <div style="
-      margin-top:10px;
-      padding:10px;
-      background:#ff9800;
-      border-radius:10px;
-      font-size:14px;
-    ">
-      ⚠️ Harga bisa berubah. Silakan update harga terbaru.
+    <div style="margin-top:10px;padding:10px;background:#ff9800;border-radius:10px;">
+      ⚠️ Harga bisa berubah, silakan input harga terbaru
     </div>
   `;
 
   document.getElementById("hasil").innerHTML = html;
-}
-
-      let html = "<h3>Riwayat Harga</h3>";
-
-      data.forEach(d => {
-        let tgl = new Date(d.tanggal).toLocaleDateString();
-        let hargaFormat = parseInt(d.harga).toLocaleString('id-ID');
-        html += `<p>${tgl} - Rp ${hargaFormat}</p>`;
-      });
-
-      document.getElementById("hasil").innerHTML = html;
-    }
-  } catch (err) {
-    document.getElementById("hasil").innerHTML = "⚠️ Error koneksi database";
-    console.error(err);
-  }
 }
 
 
@@ -343,26 +284,21 @@ async function cekData(barcode) {
    💾 SIMPAN DATA
 ========================= */
 async function simpan() {
-  try {
-    let { error } = await supabaseClient.from('produk').insert([
-      {
-        barcode: document.getElementById("barcode").value,
-        nama: document.getElementById("nama").value,
-        harga: parseInt(document.getElementById("harga").value),
-        tanggal: new Date()
-      }
-    ]);
+  await supabaseClient.from('produk').insert([{
+    barcode: document.getElementById("barcode").value,
+    nama: document.getElementById("nama").value,
+    harga: parseInt(document.getElementById("harga").value),
+    tanggal: new Date()
+  }]);
 
-    if (error) throw error;
+  alert("✅ Data tersimpan");
+}
+</script>
 
-    alert("✅ Data tersimpan");
-    document.getElementById("form").style.display = "none";
-    document.getElementById("hasil").innerHTML = "✅ Data berhasil ditambahkan";
-
-  } catch (err) {
-    alert("❌ Gagal simpan data");
-    console.error(err);
-  }
+<!-- SERVICE WORKER -->
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
 }
 </script>
 
